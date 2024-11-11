@@ -13,6 +13,7 @@ import (
 )
 
 var Features = map[string]Feature{
+	"version":      Version{},
 	"immutability": Immutability{},
 	"initrd":       Initrd{},
 	"kernel":       Kernel{},
