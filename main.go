@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	. "github.com/kairos-io/kairos-init/pkg/log"
 	"github.com/kairos-io/kairos-init/pkg/system"
 	"github.com/kairos-io/kairos-init/pkg/system/features"
-	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -12,11 +12,9 @@ import (
 import "github.com/spf13/viper"
 
 func main() {
-	var l sdkTypes.KairosLogger
 	var err error
 
-	l = sdkTypes.NewKairosLogger("kairos-init", "info", false)
-	l.Info("Initializing system as a Kairos system.")
+	Log.Info("Initializing system as a Kairos system.")
 	c := cobra.Command{
 		Use:   "kairos-init",
 		Short: "Initialize the system as a Kairos system",
@@ -37,42 +35,41 @@ func main() {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Override logger
-			l = sdkTypes.NewKairosLogger("kairos-init", viper.GetString("loglevel"), false)
-			s := system.DetectSystem(l)
+			s := system.DetectSystem(Log)
 
 			if len(viper.GetStringSlice("features")) == 1 && viper.GetStringSlice("features")[0] == "all" {
-				l.Logger.Info().Msg("Adding all features to queue")
+				Log.Logger.Info().Msg("Adding all features to queue")
 				for _, f := range features.FeatSupported() {
 					s.AddFeature(features.GetFeature(f))
 				}
 			} else {
 				for _, f := range viper.GetStringSlice("features") {
-					l.Logger.Info().Str("feature", f).Msg("Adding feature to queue")
+					Log.Logger.Info().Str("feature", f).Msg("Adding feature to queue")
 					s.AddFeature(features.GetFeature(f))
 				}
 			}
 
-			return s.ApplyFeatures(l)
+			return s.ApplyFeatures(Log)
 		},
 	}
 
 	c.Flags().StringArrayP("features", "f", []string{}, fmt.Sprintf("Features to install. Available features: %s", strings.Join(features.FeatSupported(), ", ")))
 	err = viper.BindEnv("features", "KAIROS_INIT_FEATURES")
 	if err != nil {
-		l.Logger.Err(err).Msg("Error binding environment variable")
+		Log.Logger.Err(err).Msg("Error binding environment variable")
 		return
 	}
 	c.Flags().BoolP("dry-run", "d", false, "Dry run")
 	err = viper.BindEnv("features", "KAIROS_INIT_DRY_RUN")
 	if err != nil {
-		l.Logger.Err(err).Msg("Error binding environment variable")
+		Log.Logger.Err(err).Msg("Error binding environment variable")
 		return
 	}
 	// Global flag
 	c.PersistentFlags().StringP("loglevel", "l", "info", "Log level")
 	err = viper.BindEnv("loglevel", "KAIROS_INIT_LOGLEVEL")
 	if err != nil {
-		l.Logger.Err(err).Msg("Error binding environment variable")
+		Log.Logger.Err(err).Msg("Error binding environment variable")
 		return
 	}
 
@@ -93,15 +90,14 @@ func main() {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			l = sdkTypes.NewKairosLogger("kairos-init", viper.GetString("loglevel"), false)
-			s := system.DetectSystem(l)
-			l.Logger.Info().Str("feature", args[0]).Msg("Getting feature")
-			f := s.GetFeature(args[0], l)
+			s := system.DetectSystem(Log)
+			Log.Logger.Info().Str("feature", args[0]).Msg("Getting feature")
+			f := s.GetFeature(args[0], Log)
 			if f == nil {
-				l.Logger.Err(fmt.Errorf("feature %s not found", args[0])).Msg("Error")
+				Log.Logger.Err(fmt.Errorf("feature %s not found", args[0])).Msg("Error")
 				return fmt.Errorf("feature %s not found", args[0])
 			}
-			f.Info(s, l)
+			f.Info(s, Log)
 			return nil
 		},
 	}
@@ -114,13 +110,13 @@ func main() {
 	err = viper.BindPFlags(c.Flags())
 
 	if err != nil {
-		l.Logger.Err(err).Msg("Error binding flags")
+		Log.Logger.Err(err).Msg("Error binding flags")
 		return
 	}
 	err = c.Execute()
 	if err != nil {
-		l.Logger.Err(err).Msg("Error executing command")
+		Log.Logger.Err(err).Msg("Error executing command")
 		os.Exit(1)
 	}
-	l.Logger.Info().Msg("Done")
+	Log.Logger.Info().Msg("Done")
 }
