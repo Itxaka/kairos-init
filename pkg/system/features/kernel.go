@@ -3,9 +3,7 @@
 package features
 
 import (
-	"fmt"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
-	"github.com/sanity-io/litter"
 	"os"
 )
 
@@ -53,9 +51,7 @@ func (g Kernel) InstallsPackages() bool {
 func (g Kernel) Installed(s System, l sdkTypes.KairosLogger) bool {
 	// Check if the kernel file exists
 	if _, err := os.Stat("/boot/vmlinuz"); err == nil {
-		l.Logger.Info().Msg("Kernel is already linked")
-		stat, _ := os.Stat("/boot/vmlinuz")
-		fmt.Println(litter.Sdump(stat))
+		l.Logger.Debug().Msg("Kernel is already linked")
 		return true
 	}
 	return false

@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/kairos-io/kairos-init/pkg/values"
 	"os"
 	"runtime"
 
@@ -12,7 +13,7 @@ import (
 func DetectSystem(l sdkTypes.KairosLogger) features.System {
 	// Detects the system
 	s := features.System{
-		Distro: features.Unknown,
+		Distro: values.Unknown,
 		Family: features.UnknownFamily,
 	}
 
@@ -23,96 +24,96 @@ func DetectSystem(l sdkTypes.KairosLogger) features.System {
 	defer func(file *os.File) {
 		_ = file.Close()
 	}(file)
-	values, err := godotenv.Parse(file)
+	val, err := godotenv.Parse(file)
 	if err != nil {
 		return s
 	}
-	l.Logger.Trace().Interface("values", values).Msg("Read values from os-release")
+	l.Logger.Trace().Interface("values", val).Msg("Read values from os-release")
 	// Match values to distros
-	switch features.Distro(values["ID"]) {
-	case features.Debian:
-		s.Distro = features.Debian
+	switch values.Distro(val["ID"]) {
+	case values.Debian:
+		s.Distro = values.Debian
 		s.Family = features.DebianFamily
 		s.Installer = features.APTInstaller
-	case features.Ubuntu:
-		s.Distro = features.Ubuntu
+	case values.Ubuntu:
+		s.Distro = values.Ubuntu
 		s.Family = features.DebianFamily
 		s.Installer = features.APTInstaller
-	case features.Fedora:
-		s.Distro = features.Fedora
+	case values.Fedora:
+		s.Distro = values.Fedora
 		s.Family = features.RedHatFamily
 		s.Installer = features.DNFInstaller
-	case features.RockyLinux:
-		s.Distro = features.RockyLinux
+	case values.RockyLinux:
+		s.Distro = values.RockyLinux
 		s.Family = features.RedHatFamily
 		s.Installer = features.DNFInstaller
-	case features.AlmaLinux:
-		s.Distro = features.AlmaLinux
+	case values.AlmaLinux:
+		s.Distro = values.AlmaLinux
 		s.Family = features.RedHatFamily
 		s.Installer = features.DNFInstaller
-	case features.RedHat:
-		s.Distro = features.RedHat
+	case values.RedHat:
+		s.Distro = values.RedHat
 		s.Family = features.RedHatFamily
 		s.Installer = features.DNFInstaller
-	case features.Arch:
-		s.Distro = features.Arch
+	case values.Arch:
+		s.Distro = values.Arch
 		s.Family = features.ArchFamily
 		s.Installer = features.PacmanInstaller
-	case features.Alpine:
-		s.Distro = features.Alpine
+	case values.Alpine:
+		s.Distro = values.Alpine
 		s.Family = features.AlpineFamily
 		s.Installer = features.AlpineInstaller
-	case features.OpenSUSELeap:
-		s.Distro = features.OpenSUSELeap
+	case values.OpenSUSELeap:
+		s.Distro = values.OpenSUSELeap
 		s.Family = features.SUSEFamily
 		s.Installer = features.SUSEInstaller
-	case features.OpenSUSETumbleweed:
-		s.Distro = features.OpenSUSETumbleweed
+	case values.OpenSUSETumbleweed:
+		s.Distro = values.OpenSUSETumbleweed
 		s.Family = features.SUSEFamily
 		s.Installer = features.SUSEInstaller
 	}
 
 	// Match architecture
-	switch features.Architecture(runtime.GOARCH) {
-	case features.ArchAMD64:
-		s.Arch = features.ArchAMD64
-	case features.ArchARM64:
-		s.Arch = features.ArchARM64
+	switch values.Architecture(runtime.GOARCH) {
+	case values.ArchAMD64:
+		s.Arch = values.ArchAMD64
+	case values.ArchARM64:
+		s.Arch = values.ArchARM64
 	}
 
 	// Check if we are still unknown
-	if s.Distro == features.Unknown {
+	if s.Distro == values.Unknown {
 		// Check ID_LIKE value
 		// For some derivatives they ID will be their own but the ID_LIKE will be the parent
 		// So we may be able to detect the parent and use the same family and such
-		switch features.Family(values["ID_LIKE"]) {
+		switch features.Family(val["ID_LIKE"]) {
 		case features.DebianFamily:
-			s.Distro = features.Debian
+			s.Distro = values.Debian
 			s.Family = features.DebianFamily
 			s.Installer = features.APTInstaller
-		case features.RedHatFamily, features.Family(features.Fedora):
-			s.Distro = features.Fedora
+		case features.RedHatFamily, features.Family(values.Fedora):
+			s.Distro = values.Fedora
 			s.Family = features.RedHatFamily
 			s.Installer = features.DNFInstaller
 		case features.ArchFamily:
-			s.Distro = features.Arch
+			s.Distro = values.Arch
 			s.Family = features.ArchFamily
 			s.Installer = features.PacmanInstaller
 		case features.SUSEFamily:
-			s.Distro = features.OpenSUSELeap
+			s.Distro = values.OpenSUSELeap
 			s.Family = features.SUSEFamily
 			s.Installer = features.SUSEInstaller
 		}
 	}
 
 	// Store the version
-	s.Version = values["VERSION_ID"]
+	s.Version = val["VERSION_ID"]
 
 	// Store the name
-	s.Name = values["PRETTY_NAME"]
+	s.Name = val["PRETTY_NAME"]
 	// Fallback to normal name
 	if s.Name == "" {
-		s.Name = values["NAME"]
+		s.Name = val["NAME"]
 	}
 
 	s.Features = []features.Feature{}

@@ -5,6 +5,7 @@ import (
 	. "github.com/kairos-io/kairos-init/pkg/log"
 	"github.com/kairos-io/kairos-init/pkg/system"
 	"github.com/kairos-io/kairos-init/pkg/system/features"
+	"github.com/kairos-io/kairos-init/pkg/validator"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -34,7 +35,9 @@ func main() {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Override logger
+			// Override logger if the level has changed
+			Log.SetLevel(viper.GetString("loglevel"))
+
 			s := system.DetectSystem(Log)
 
 			if len(viper.GetStringSlice("features")) == 1 && viper.GetStringSlice("features")[0] == "all" {
@@ -49,7 +52,13 @@ func main() {
 				}
 			}
 
-			return s.ApplyFeatures(Log)
+			err = s.ApplyFeatures(Log)
+			if err != nil {
+				Log.Logger.Err(err).Msg("Error applying features")
+				return err
+			}
+			err = validator.Validate()
+			return err
 		},
 	}
 
@@ -105,6 +114,18 @@ func main() {
 	// Add the subcommand to the parent command
 	c.AddCommand(subCmd)
 
+	validatorCmd := &cobra.Command{
+		Use:   "validate",
+		Short: "Validate the system",
+		Args:  cobra.NoArgs,
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.SilenceUsage = true
+			return validator.Validate()
+		},
+	}
+	c.AddCommand(validatorCmd)
+
 	// Bind persistent flag especifically
 	_ = viper.BindPFlag("loglevel", c.PersistentFlags().Lookup("loglevel"))
 	err = viper.BindPFlags(c.Flags())
@@ -115,7 +136,6 @@ func main() {
 	}
 	err = c.Execute()
 	if err != nil {
-		Log.Logger.Err(err).Msg("Error executing command")
 		os.Exit(1)
 	}
 	Log.Logger.Info().Msg("Done")

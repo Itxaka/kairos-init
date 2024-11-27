@@ -1,5 +1,7 @@
 package features
 
+import "github.com/kairos-io/kairos-init/pkg/values"
+
 // Immutability is a map of packages to install for each distro.
 // so we can deal with stupid different names between distros.
 
@@ -35,24 +37,23 @@ var commonPackages = []string{
 // That saves 400Mb as it doesnt bring any other stuff like firmware and extra modules
 // Then we have that as an extra feature or whatever so we can install it if needed (uki slim vs fat)
 // curl is needed for livenet, which in turn is needed for kairos-network
-var immucorePackages = map[string][]string{
-	"ubuntu": {
+var immucorePackages = map[values.Distro][]string{
+	values.Ubuntu: {
 		"dbus", "dracut", "dracut-network", "dracut-live", "dosfstools", "e2fsprogs", "isc-dhcp-common",
 		"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup", "ca-certificates",
 		"systemd-sysv", "cloud-guest-utils", "gawk",
 	},
 }
 
-var kernelPackages = map[string][]string{
-	"ubuntu": {"linux-image-generic"},
+var kernelPackages = map[values.Distro][]string{
+	values.Ubuntu: {"linux-image-generic"},
 }
 
-var packages = map[string][]string{
-	"debian": {"grub2"},
-	"ubuntu": append([]string{
+var basePackages = map[values.Distro][]string{
+	values.Debian: {"grub2"},
+	values.Ubuntu: append([]string{
 		"gdisk",
 		"fdisk",
-		"grub2",
 		"ca-certificates",
 		"conntrack",
 		"console-data",
@@ -75,9 +76,36 @@ var packages = map[string][]string{
 		"xz-utils",
 		"tpm2-tools",
 	}, commonPackages...),
-	"centos": {"grub2"},
-	"rhel":   {"grub2"},
-	"fedora": {"grub2"},
-	"alpine": {"grub2"},
-	"arch":   {"grub2"},
+	values.RedHat: {"grub2"},
+	values.Fedora: {"grub2"},
+	values.Alpine: {"grub2"},
+	values.Arch:   {"grub2"},
+}
+
+// grubPackages is a map of packages to install for each distro and architecture.
+var grubPackages = map[values.Distro]map[values.Architecture][]string{
+	values.Ubuntu: {
+		values.ArchAMD64: {
+			"grub2",
+			"grub-efi-amd64-bin",
+			"grub-efi-amd64-signed",
+			"grub-pc-bin",
+		},
+		values.ArchARM64: {
+			"grub-efi-arm64",
+			"grub-efi-arm64-bin",
+			"grub-efi-arm64-signed",
+		},
+	},
+}
+
+var systemdPackages = map[values.Distro]map[values.Architecture][]string{
+	values.Ubuntu: {
+		values.ArchAMD64: {
+			"systemd",
+		},
+		values.ArchARM64: {
+			"systemd",
+		},
+	},
 }

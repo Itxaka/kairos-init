@@ -1,25 +1,9 @@
 package features
 
 import (
+	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"strings"
-)
-
-type Distro string
-
-// Individual distros for when we need to be specific
-const (
-	Unknown            Distro = "unknown"
-	Debian             Distro = "debian"
-	Ubuntu             Distro = "ubuntu"
-	RedHat             Distro = "redhat"
-	RockyLinux         Distro = "rocky"
-	AlmaLinux          Distro = "almalinux"
-	Fedora             Distro = "fedora"
-	Arch               Distro = "arch"
-	Alpine             Distro = "alpine"
-	OpenSUSELeap       Distro = "opensuse-leap"
-	OpenSUSETumbleweed Distro = "opensuse-tumbleweed"
 )
 
 type Family string
@@ -34,20 +18,13 @@ const (
 	SUSEFamily    Family = "suse"
 )
 
-type Architecture string
-
-const (
-	ArchAMD64 Architecture = "amd64"
-	ArchARM64 Architecture = "arm64"
-)
-
 // System Represents a given system
 type System struct {
 	Name        string
-	Distro      Distro
+	Distro      values.Distro
 	Family      Family
 	Version     string
-	Arch        Architecture
+	Arch        values.Architecture
 	Features    []Feature
 	Workarounds []func() error
 	Installer   Installer

@@ -53,7 +53,7 @@ func CommandToLogger(cmd string, args []string, l sdkTypes.KairosLogger) (err er
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
-			l.Logger.Debug().Str("output", "stdout").Msg(scanner.Text())
+			l.Logger.Debug().Msg(scanner.Text())
 		}
 	}()
 

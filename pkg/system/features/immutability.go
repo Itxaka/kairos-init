@@ -3,6 +3,7 @@
 package features
 
 import (
+	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	sdkUtils "github.com/kairos-io/kairos-sdk/utils"
 	"os"
@@ -20,8 +21,18 @@ func (g Immutability) Name() string {
 // Install installs the Immutability feature.
 func (g Immutability) Install(s System, l sdkTypes.KairosLogger) error {
 	// First packages so certs are updated
+	pkg := kernelPackages[s.Distro]
+	// Add packages in which immucre depends
+	pkg = append(pkg, immucorePackages[s.Distro]...)
+	// Add generic packages that we need
+	pkg = append(pkg, basePackages[s.Distro]...)
+	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
+	// Add grub packages
+	pkg = append(pkg, grubPackages[s.Distro][s.Arch]...)
+	// Add systemd packages
+	pkg = append(pkg, systemdPackages[s.Distro][s.Arch]...)
 
-	err := s.Installer.Install(append(kernelPackages[string(s.Distro)], immucorePackages[string(s.Distro)]...), l)
+	err := s.Installer.Install(pkg, l)
 	if err != nil {
 		return err
 	}
@@ -32,6 +43,14 @@ func (g Immutability) Install(s System, l sdkTypes.KairosLogger) error {
 	l.Logger.Debug().Msg("Installed framework")
 
 	// Install config files that affect initramfs and rootfs only, which are the ones that affect immucore?
+	err = os.MkdirAll("/etc/kairos", os.ModeDir|os.ModePerm)
+	if err != nil {
+		return err
+	}
+	_, err = os.Create(values.ImmutabilitySentinel)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -62,5 +81,7 @@ func (g Immutability) Installed(s System, l sdkTypes.KairosLogger) bool {
 	if err != nil {
 		return false
 	}
+	// TODO: Check more stuff? Lije packages and so on if we want to be exhaustive?
+	// Use maybe files to mark that the feature was fully installed already? /etc/kairos/.inmmutability_installed ?
 	return true
 }

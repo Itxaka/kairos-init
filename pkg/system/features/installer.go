@@ -50,12 +50,6 @@ func (i Installer) Install(packages []string, l sdkTypes.KairosLogger) error {
 	return nil
 }
 
-// InstallKernel installs the kernel only as we need ot do some magic to stop bringing in other packages
-func (i Installer) InstallKernel(l sdkTypes.KairosLogger) error {
-
-	return nil
-}
-
 func (i Installer) Remove(packages []string, l sdkTypes.KairosLogger) error {
 	var args []string
 	cmd := string(i)

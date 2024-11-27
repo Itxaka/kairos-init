@@ -56,7 +56,7 @@ func (g Initrd) InstallsPackages() bool {
 func (g Initrd) Installed(s System, l sdkTypes.KairosLogger) bool {
 	// Check if the initrd file exists
 	if _, err := os.Stat("/boot/initrd"); err == nil {
-		l.Logger.Info().Msg("Initrd is already generated")
+		l.Logger.Debug().Msg("Initrd is already generated")
 		return true
 	}
 	return false
