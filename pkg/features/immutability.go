@@ -19,18 +19,18 @@ func (g Immutability) Name() string {
 }
 
 // Install installs the Immutability feature.
-func (g Immutability) Install(s System, l sdkTypes.KairosLogger) error {
+func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	// First packages so certs are updated
-	pkg := kernelPackages[s.Distro]
+	pkg := values.KernelPackages[s.Distro]
 	// Add packages in which immucre depends
-	pkg = append(pkg, immucorePackages[s.Distro]...)
+	pkg = append(pkg, values.ImmucorePackages[s.Distro]...)
 	// Add generic packages that we need
-	pkg = append(pkg, basePackages[s.Distro]...)
+	pkg = append(pkg, values.BasePackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
 	// Add grub packages
-	pkg = append(pkg, grubPackages[s.Distro][s.Arch]...)
+	pkg = append(pkg, values.GrubPackages[s.Distro][s.Arch]...)
 	// Add systemd packages
-	pkg = append(pkg, systemdPackages[s.Distro][s.Arch]...)
+	pkg = append(pkg, values.SystemdPackages[s.Distro][s.Arch]...)
 
 	err := s.Installer.Install(pkg, l)
 	if err != nil {
@@ -55,12 +55,12 @@ func (g Immutability) Install(s System, l sdkTypes.KairosLogger) error {
 }
 
 // Remove removes the Immutability feature.
-func (g Immutability) Remove(s System, l sdkTypes.KairosLogger) error {
+func (g Immutability) Remove(s values.System, l sdkTypes.KairosLogger) error {
 	return nil
 }
 
 // Info logs information about the Immutability feature.
-func (g Immutability) Info(s System, l sdkTypes.KairosLogger) {
+func (g Immutability) Info(s values.System, l sdkTypes.KairosLogger) {
 	l.Info("Immutability feature. This installs immucore and the cloud configs files to support immutability")
 }
 
@@ -75,7 +75,7 @@ func (g Immutability) InstallsPackages() bool {
 }
 
 // Installed returns true if the Immutability feature is installed.
-func (g Immutability) Installed(s System, l sdkTypes.KairosLogger) bool {
+func (g Immutability) Installed(s values.System, l sdkTypes.KairosLogger) bool {
 	// Check if immucore binary is on the system
 	_, err := os.Stat("/usr/bin/immucore")
 	if err != nil {

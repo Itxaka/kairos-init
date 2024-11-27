@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/kairos-io/kairos-init/pkg/features"
 	. "github.com/kairos-io/kairos-init/pkg/log"
 	"github.com/kairos-io/kairos-init/pkg/system"
-	"github.com/kairos-io/kairos-init/pkg/system/features"
 	"github.com/kairos-io/kairos-init/pkg/validator"
 	"github.com/spf13/cobra"
 	"os"

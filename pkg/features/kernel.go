@@ -3,6 +3,7 @@
 package features
 
 import (
+	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"os"
 )
@@ -17,7 +18,7 @@ func (g Kernel) Name() string {
 }
 
 // Install installs the Immutability feature.
-func (g Kernel) Install(s System, l sdkTypes.KairosLogger) error {
+func (g Kernel) Install(s values.System, l sdkTypes.KairosLogger) error {
 	kernelVersion, err := GetLatestKernel(l)
 	err = os.Link("/boot/vmlinuz-"+kernelVersion, "/boot/vmlinuz")
 	if err != nil {
@@ -28,12 +29,12 @@ func (g Kernel) Install(s System, l sdkTypes.KairosLogger) error {
 }
 
 // Remove removes the Immutability feature.
-func (g Kernel) Remove(s System, l sdkTypes.KairosLogger) error {
+func (g Kernel) Remove(s values.System, l sdkTypes.KairosLogger) error {
 	return nil
 }
 
 // Info logs information about the Immutability feature.
-func (g Kernel) Info(s System, l sdkTypes.KairosLogger) {
+func (g Kernel) Info(s values.System, l sdkTypes.KairosLogger) {
 	l.Info("Kernel feature.")
 }
 
@@ -48,7 +49,7 @@ func (g Kernel) InstallsPackages() bool {
 }
 
 // Installed returns true if the Immutability feature is installed.
-func (g Kernel) Installed(s System, l sdkTypes.KairosLogger) bool {
+func (g Kernel) Installed(s values.System, l sdkTypes.KairosLogger) bool {
 	// Check if the kernel file exists
 	if _, err := os.Stat("/boot/vmlinuz"); err == nil {
 		l.Logger.Debug().Msg("Kernel is already linked")

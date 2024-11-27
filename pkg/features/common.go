@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Masterminds/semver/v3"
+	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"os"
 	"os/exec"
@@ -12,7 +13,7 @@ import (
 	"strings"
 )
 
-var Features = map[string]Feature{
+var Features = map[string]values.Feature{
 	"immutability": Immutability{},
 	"initrd":       Initrd{},
 	"kernel":       Kernel{},
@@ -26,7 +27,7 @@ var FeatSupported = func() []string {
 	return f
 }
 
-func GetFeature(name string) Feature {
+func GetFeature(name string) values.Feature {
 	return Features[strings.ToLower(name)]
 }
 

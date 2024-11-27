@@ -1,6 +1,7 @@
 package features
 
 import (
+	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"os"
 )
@@ -17,7 +18,7 @@ func (g Initrd) Name() string {
 }
 
 // Install installs the Initrd feature.
-func (g Initrd) Install(s System, l sdkTypes.KairosLogger) error {
+func (g Initrd) Install(s values.System, l sdkTypes.KairosLogger) error {
 	kernelVersion, err := GetLatestKernel(l)
 	if err != nil {
 		return err
@@ -33,12 +34,12 @@ func (g Initrd) Install(s System, l sdkTypes.KairosLogger) error {
 }
 
 // Remove removes the Initrd feature.
-func (g Initrd) Remove(s System, l sdkTypes.KairosLogger) error {
+func (g Initrd) Remove(s values.System, l sdkTypes.KairosLogger) error {
 	return nil
 }
 
 // Info logs information about the Initrd feature.
-func (g Initrd) Info(s System, l sdkTypes.KairosLogger) {
+func (g Initrd) Info(s values.System, l sdkTypes.KairosLogger) {
 	l.Info("Initrd feature.")
 }
 
@@ -53,7 +54,7 @@ func (g Initrd) InstallsPackages() bool {
 }
 
 // Installed returns true if the Initrd feature is installed.
-func (g Initrd) Installed(s System, l sdkTypes.KairosLogger) bool {
+func (g Initrd) Installed(s values.System, l sdkTypes.KairosLogger) bool {
 	// Check if the initrd file exists
 	if _, err := os.Stat("/boot/initrd"); err == nil {
 		l.Logger.Debug().Msg("Initrd is already generated")
