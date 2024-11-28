@@ -10,6 +10,11 @@ import (
 
 // KairosServices represents the KairosServices feature.
 type KairosServices struct {
+	Order int
+}
+
+func (g KairosServices) GetOrder() int {
+	return g.Order
 }
 
 func (g KairosServices) Name() string {

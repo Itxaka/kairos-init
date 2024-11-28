@@ -12,6 +12,11 @@ import (
 // Immutability represents the Immutability feature.
 // This install immucore and its required packages to run.
 type Immutability struct {
+	Order int
+}
+
+func (g Immutability) GetOrder() int {
+	return g.Order
 }
 
 func (g Immutability) Name() string {

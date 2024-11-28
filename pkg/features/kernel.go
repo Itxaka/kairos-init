@@ -11,6 +11,11 @@ import (
 // Kernel represents the Kernel feature.
 // This just links the latest kernel to /boot/vmlinuz
 type Kernel struct {
+	Order int
+}
+
+func (g Kernel) GetOrder() int {
+	return g.Order
 }
 
 func (g Kernel) Name() string {

@@ -14,9 +14,10 @@ import (
 )
 
 var Features = map[string]values.Feature{
-	"immutability": Immutability{},
-	"initrd":       Initrd{},
-	"kernel":       Kernel{},
+	"immutability": Immutability{Order: 1},
+	"release":      KairosRelease{Order: 2},
+	"kernel":       Kernel{Order: 3},
+	"initrd":       Initrd{Order: 4},
 }
 
 var FeatSupported = func() []string {
@@ -38,6 +39,18 @@ func FeatureSupported(name string) bool {
 		}
 	}
 	return false
+}
+
+// GetOrderedFeatures Returns the features in order
+func GetOrderedFeatures() []values.Feature {
+	var orderedFeatures []values.Feature
+	for _, feature := range Features {
+		orderedFeatures = append(orderedFeatures, feature)
+	}
+	sort.Slice(orderedFeatures, func(i, j int) bool {
+		return orderedFeatures[i].GetOrder() < orderedFeatures[j].GetOrder()
+	})
+	return orderedFeatures
 }
 
 func CommandToLogger(cmd string, args []string, l sdkTypes.KairosLogger) (err error) {

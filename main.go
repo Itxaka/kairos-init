@@ -42,8 +42,8 @@ func main() {
 
 			if len(viper.GetStringSlice("features")) == 1 && viper.GetStringSlice("features")[0] == "all" {
 				Log.Logger.Info().Msg("Adding all features to queue")
-				for _, f := range features.FeatSupported() {
-					s.AddFeature(features.GetFeature(f))
+				for _, f := range features.GetOrderedFeatures() {
+					s.AddFeature(f)
 				}
 			} else {
 				for _, f := range viper.GetStringSlice("features") {

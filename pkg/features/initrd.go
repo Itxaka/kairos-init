@@ -11,6 +11,11 @@ import (
 
 // Initrd represents the Initrd feature.
 type Initrd struct {
+	Order int
+}
+
+func (g Initrd) GetOrder() int {
+	return g.Order
 }
 
 func (g Initrd) Name() string {

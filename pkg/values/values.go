@@ -16,12 +16,20 @@ func BinariesCheck() []string {
 
 type Architecture string
 
+func (a Architecture) String() string {
+	return string(a)
+}
+
 const (
 	ArchAMD64 Architecture = "amd64"
 	ArchARM64 Architecture = "arm64"
 )
 
 type Distro string
+
+func (d Distro) String() string {
+	return string(d)
+}
 
 // Individual distros for when we need to be specific
 const (
@@ -46,6 +54,10 @@ const (
 
 type Family string
 
+func (f Family) String() string {
+	return string(f)
+}
+
 // generic families that have things in common and we can apply to all of them
 const (
 	UnknownFamily Family = "unknown"
@@ -66,6 +78,7 @@ type Feature interface {
 	HasServices() bool
 	InstallsPackages() bool
 	Name() string
+	GetOrder() int
 }
 
 // Installer is an interface that defines the methods to install and remove packages
