@@ -4,6 +4,7 @@ import (
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"os"
+	"path/filepath"
 )
 
 // Implement the initrd feature that generates a initrd with the needed packages on it and configuration.
@@ -28,7 +29,19 @@ func (g Initrd) Install(s values.System, l sdkTypes.KairosLogger) error {
 	if err != nil {
 		return err
 	}
+	// Remove existing initrd files
+	matches, err := filepath.Glob("/boot/initrd*")
+	if err != nil {
+		return err
+	}
 
+	// Print the matched files
+	for _, match := range matches {
+		err = os.Remove(match)
+		if err != nil {
+			return err
+		}
+	}
 	cmd := "dracut"
 	args := []string{"-v", "-f", "/boot/initrd", kernelVersion}
 	l.Logger.Debug().Str("command", cmd).Strs("args", args).Msg("Running command")

@@ -4,9 +4,9 @@ go 1.23.2
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.5.1
 	github.com/kairos-io/kairos-sdk v0.6.0
-	github.com/sanity-io/litter v1.5.5
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
@@ -43,7 +43,6 @@ require (
 	github.com/google/go-containerregistry v0.20.2 // indirect
 	github.com/gookit/color v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect

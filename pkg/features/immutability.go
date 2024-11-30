@@ -25,12 +25,12 @@ func (g Immutability) Name() string {
 
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
-	// First packages so certs are updated
-	pkg := values.KernelPackages[s.Distro]
-	// Add packages in which immucre depends
+	// First base packages so certs are updated
+	pkg := values.BasePackages[s.Distro]
+	// Add packages in which immucore depends
 	pkg = append(pkg, values.ImmucorePackages[s.Distro]...)
-	// Add generic packages that we need
-	pkg = append(pkg, values.BasePackages[s.Distro]...)
+	// Add kernel packages
+	pkg = append(pkg, values.KernelPackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
 	// Add grub packages
 	pkg = append(pkg, values.GrubPackages[s.Distro][s.Arch]...)
@@ -43,7 +43,7 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	}
 
 	l.Logger.Debug().Msg("Installing framework")
-	frameworkImage, err := sdkUtils.GetImage("quay.io/kairos/framework:v2.14.1", "", nil, nil)
+	frameworkImage, err := sdkUtils.GetImage("quay.io/kairos/framework:v2.14.4", "", nil, nil)
 	err = sdkUtils.ExtractOCIImage(frameworkImage, "/")
 	l.Logger.Debug().Msg("Installed framework")
 
@@ -86,7 +86,7 @@ func (g Immutability) Installed(s values.System, l sdkTypes.KairosLogger) bool {
 	if err != nil {
 		return false
 	}
-	// TODO: Check more stuff? Lije packages and so on if we want to be exhaustive?
+	// TODO: Check more stuff? Like packages and so on if we want to be exhaustive?
 	// Use maybe files to mark that the feature was fully installed already? /etc/kairos/.inmmutability_installed ?
 	return true
 }

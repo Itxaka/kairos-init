@@ -17,7 +17,7 @@ var Features = map[string]values.Feature{
 	"immutability": Immutability{Order: 1},
 	"release":      KairosRelease{Order: 2},
 	"kernel":       Kernel{Order: 3},
-	"initrd":       Initrd{Order: 4},
+	"initrd":       Initrd{Order: 5},
 }
 
 var FeatSupported = func() []string {

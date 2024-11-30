@@ -35,8 +35,7 @@ func (k KairosRelease) Install(system values.System, logger sdkTypes.KairosLogge
 	// KAIROS_GITHUB_REPO="kairos-io/kairos"
 	// KAIROS_IMAGE_REPO="quay.io/kairos/ubuntu:24.04-standard-amd64-generic-v3.2.3-4-gae5349e"
 	// KAIROS_ARTIFACT="kairos-ubuntu-24.04-standard-amd64-generic-v3.2.3-4-gae5349e"
-	// KAIROS_FLAVOR="ubuntu"
-	// KAIROS_MODEL="generic"
+	//
 	// KAIROS_TARGETARCH="amd64"
 	// KAIROS_BUG_REPORT_URL="https://github.com/kairos-io/kairos/issues"
 	// KAIROS_HOME_URL="https://github.com/kairos-io/kairos"
@@ -47,6 +46,9 @@ func (k KairosRelease) Install(system values.System, logger sdkTypes.KairosLogge
 		"KAIROS_ARCH":    system.Arch.String(),
 		"KAIROS_FLAVOR":  system.Distro.String(),
 		"KAIROS_FAMILY":  system.Family.String(),
+		"KAIROS_MODEL":   "generic", // NEEDED or it breaks boot!
+		"KAIROS_VARIANT": "core",    // Maybe needed?
+		"TEST":           "HALLO",
 	}
 	return godotenv.Write(releaseInfo, "/etc/kairos-release")
 }
