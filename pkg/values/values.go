@@ -14,6 +14,13 @@ func BinariesCheck() []string {
 	}
 }
 
+func FilesToRemove() []string {
+	return []string{
+		"/var/lib/dbus/machine-id",
+		"/etc/hostname",
+	}
+}
+
 type Architecture string
 
 func (a Architecture) String() string {
@@ -97,6 +104,7 @@ type System struct {
 	Features    []Feature
 	Workarounds []func() error
 	Installer   Installer
+	Force       bool // Force will force the installation of the features without checking the Installed() method
 }
 
 // ApplyFeatures will apply the features to the system

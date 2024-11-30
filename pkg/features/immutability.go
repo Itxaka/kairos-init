@@ -81,12 +81,13 @@ func (g Immutability) InstallsPackages() bool {
 
 // Installed returns true if the Immutability feature is installed.
 func (g Immutability) Installed(s values.System, l sdkTypes.KairosLogger) bool {
-	// Check if immucore binary is on the system
-	_, err := os.Stat("/usr/bin/immucore")
+	if s.Force {
+		return false
+	}
+	// Check sentinel
+	_, err := os.Stat(values.ImmutabilitySentinel)
 	if err != nil {
 		return false
 	}
-	// TODO: Check more stuff? Like packages and so on if we want to be exhaustive?
-	// Use maybe files to mark that the feature was fully installed already? /etc/kairos/.inmmutability_installed ?
 	return true
 }

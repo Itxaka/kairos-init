@@ -12,12 +12,18 @@ import (
 	"strings"
 )
 
-func Validate() error {
+func ValidateFeatures(features []values.Feature) error {
 	var err *multierror.Error
-	err = multierror.Append(err, validateKernel())
-	err = multierror.Append(err, validateBinaries())
-	err = multierror.Append(err, validateSystemd())
-	err = multierror.Append(err, validateInitrd())
+	for _, f := range features {
+		switch f.Name() {
+		case "immutability":
+			err = multierror.Append(err, validateBinaries())
+		case "kernel":
+			err = multierror.Append(err, validateKernel())
+		case "initrd":
+			err = multierror.Append(err, validateInitrd())
+		}
+	}
 	return err.ErrorOrNil()
 }
 

@@ -25,6 +25,15 @@ func (g Kernel) Name() string {
 // Install installs the Immutability feature.
 func (g Kernel) Install(s values.System, l sdkTypes.KairosLogger) error {
 	kernelVersion, err := GetLatestKernel(l)
+	if err != nil {
+		l.Logger.Error().Err(err).Msgf("Failed to get the latest kernel version: %s", err)
+		return err
+	}
+	err = CommandToLogger("depmod", []string{"-a", kernelVersion}, l)
+	if err != nil {
+		l.Logger.Error().Err(err).Msgf("Failed to run depmod: %s", err)
+		return err
+	}
 	err = os.Link("/boot/vmlinuz-"+kernelVersion, "/boot/vmlinuz")
 	if err != nil {
 		l.Logger.Error().Err(err).Msgf("Failed to link the kernel file: %s", err)

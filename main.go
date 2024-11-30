@@ -6,6 +6,7 @@ import (
 	. "github.com/kairos-io/kairos-init/pkg/log"
 	"github.com/kairos-io/kairos-init/pkg/system"
 	"github.com/kairos-io/kairos-init/pkg/validator"
+	"github.com/kairos-io/kairos-init/pkg/values"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -57,8 +58,9 @@ func main() {
 				Log.Logger.Err(err).Msg("Error applying features")
 				return err
 			}
-			err = validator.Validate()
-			return err
+			err = validator.ValidateFeatures(s.Features)
+			fmt.Println(err)
+			return nil
 		},
 	}
 
@@ -121,8 +123,26 @@ func main() {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
-			return validator.Validate()
+			var f []values.Feature
+			if len(viper.GetStringSlice("features")) == 1 && viper.GetStringSlice("features")[0] == "all" {
+				Log.Logger.Info().Msg("Adding all features to queue")
+				for _, feat := range features.GetOrderedFeatures() {
+					f = append(f, feat)
+				}
+			} else {
+				for _, feat := range viper.GetStringSlice("features") {
+					Log.Logger.Info().Str("feature", feat).Msg("Adding feature to queue")
+					f = append(f, features.GetFeature(feat))
+				}
+			}
+			return validator.ValidateFeatures(f)
 		},
+	}
+	validatorCmd.Flags().StringArrayP("features", "f", []string{}, fmt.Sprintf("Features to install. Available features: %s", strings.Join(features.FeatSupported(), ", ")))
+	err = viper.BindEnv("features", "KAIROS_INIT_FEATURES")
+	if err != nil {
+		Log.Logger.Err(err).Msg("Error binding environment variable")
+		return
 	}
 	c.AddCommand(validatorCmd)
 

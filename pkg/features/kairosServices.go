@@ -1,6 +1,8 @@
 package features
 
 import (
+	"context"
+	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 )
@@ -23,6 +25,25 @@ func (g KairosServices) Name() string {
 
 // Install installs the KairosServices feature.
 func (g KairosServices) Install(s values.System, l sdkTypes.KairosLogger) error {
+	conn, err := dbus.NewWithContext(context.Background())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	servicesNames := []string{
+		"systemd-pcrlock-make-policy",
+	}
+
+	// Enable the service
+	_, err = conn.DisableUnitFilesContext(context.Background(), servicesNames, false)
+	if err != nil {
+		l.Logger.Error().Err(err).Msg("Disabling services")
+	}
+	_, err = conn.MaskUnitFilesContext(context.Background(), servicesNames, false, true)
+	if err != nil {
+		l.Logger.Error().Err(err).Msg("Masking services")
+	}
 	return nil
 }
 
@@ -49,4 +70,10 @@ func (g KairosServices) InstallsPackages() bool {
 // Installed returns true if the KairosServices feature is installed.
 func (g KairosServices) Installed(s values.System, l sdkTypes.KairosLogger) bool {
 	return true
+}
+
+type EnableUnitFileChange struct {
+	Type        string // Type of the change (one of symlink or unlink)
+	Filename    string // File name of the symlink
+	Destination string // Destination of the symlink
 }

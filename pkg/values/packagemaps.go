@@ -81,7 +81,6 @@ var BasePackages = map[Distro][]string{
 		"networkd-dispatcher",
 		"packagekit-tools",
 		"publicsuffix",
-		"thermald",
 		"xdg-user-dirs",
 		"xxd",
 		"zerofree",
