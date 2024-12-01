@@ -25,19 +25,23 @@ func (g Immutability) Name() string {
 
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
-	// First base packages so certs are updated
-	pkg := values.BasePackages[s.Distro]
-	// Add packages in which immucore depends
-	pkg = append(pkg, values.ImmucorePackages[s.Distro]...)
+	// First base packages so certs are updated + immucore
+	mergedPkgs := append(values.BasePackages[s.Distro][s.Arch], values.CommonPackages...)
+	// Add immucore required packages
+	mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch]...)
 	// Add kernel packages
-	pkg = append(pkg, values.KernelPackages[s.Distro]...)
+	mergedPkgs = append(mergedPkgs, values.KernelPackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
-	// Add grub packages
-	pkg = append(pkg, values.GrubPackages[s.Distro][s.Arch]...)
-	// Add systemd packages
-	pkg = append(pkg, values.SystemdPackages[s.Distro][s.Arch]...)
+	mergedPkgs = append(mergedPkgs, values.GrubPackages[s.Distro][s.Arch]...)
+	mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch]...)
 
-	err := s.Installer.Install(pkg, l)
+	// Now parse the packages with the templating engine
+	finalMergedPkgs, err := values.PackageListToTemplate(mergedPkgs, s.GetTemplateParams(), l)
+	if err != nil {
+		l.Logger.Error().Err(err).Msg("Error parsing base packages.")
+		return err
+	}
+	err = s.Installer.Install(finalMergedPkgs, l)
 	if err != nil {
 		return err
 	}

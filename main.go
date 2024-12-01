@@ -58,9 +58,7 @@ func main() {
 				Log.Logger.Err(err).Msg("Error applying features")
 				return err
 			}
-			err = validator.ValidateFeatures(s.Features)
-			fmt.Println(err)
-			return nil
+			return validator.ValidateFeatures(s.Features)
 		},
 	}
 

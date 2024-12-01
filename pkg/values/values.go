@@ -164,3 +164,12 @@ func (s *System) RemoveFeature(f Feature) {
 		}
 	}
 }
+
+// GetTemplateParams returns a map of parameters that can be used in a template
+func (s *System) GetTemplateParams() map[string]string {
+	return map[string]string{
+		"distro":  s.Distro.String(),
+		"version": s.Version,
+		"arch":    s.Arch.String(),
+	}
+}

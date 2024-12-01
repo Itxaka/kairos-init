@@ -35,11 +35,13 @@ func (g KairosServices) Install(s values.System, l sdkTypes.KairosLogger) error 
 		"systemd-pcrlock-make-policy",
 	}
 
-	// Enable the service
+	// TODO: return the error?
+	// Disable the service
 	_, err = conn.DisableUnitFilesContext(context.Background(), servicesNames, false)
 	if err != nil {
 		l.Logger.Error().Err(err).Msg("Disabling services")
 	}
+	// Mask the service
 	_, err = conn.MaskUnitFilesContext(context.Background(), servicesNames, false, true)
 	if err != nil {
 		l.Logger.Error().Err(err).Msg("Masking services")

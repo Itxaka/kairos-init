@@ -4,6 +4,7 @@ import (
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	"os"
+	"path/filepath"
 )
 
 // Cleanup represents the Cleanup feature.
@@ -31,6 +32,32 @@ func (c Cleanup) Install(system values.System, logger sdkTypes.KairosLogger) err
 	// Remove old initrds and kernels
 	// We are only interested in keeping the one linked to /etc/initrd and /etc/vmlinuz
 	// So we read the softlink at /boot/initrd and /boot/vmlinuz and remove the others
+
+	kernels, err := filepath.Glob("/boot/vmlinuz-*")
+	if err != nil {
+		return err
+	}
+	var skip string
+	// read the link
+	skip, err = os.Readlink("/boot/vmlinuz")
+	if err != nil {
+		logger.Logger.Error().Err(err).Msg("Error reading kernel link.")
+		return err
+	}
+	logger.Logger.Info().Str("current", skip).Msg("Found current kernel.")
+
+	for _, kernel := range kernels {
+		logger.Logger.Info().Str("kernel", filepath.Base(kernel)).Str("current", filepath.Base(skip)).Msg("Checking kernel.")
+		if kernel != "/boot/vmlinuz" && filepath.Base(kernel) != filepath.Base(skip) {
+			logger.Logger.Info().Str("kernel", kernel).Msg("Removing kernel.")
+			err = os.Remove(kernel)
+			if err != nil {
+				logger.Logger.Error().Err(err).Str("kernel", kernel).Msg("Error removing kernel.")
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
