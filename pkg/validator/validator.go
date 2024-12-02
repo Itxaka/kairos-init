@@ -30,8 +30,20 @@ func ValidateFeatures(features []values.Feature) error {
 // validateKernel checks if the kernel is there and its linked from /boot/vmlinuz
 func validateKernel() error {
 	log.Log.Logger.Info().Msg("Validating kernel")
-	_, stat := os.Stat("/boot/vmlinuz")
-	return stat
+	// check if the kernel is linked from /boot/vmlinuz so it should be a symlink and valid
+	link, stat := os.Lstat("/boot/vmlinuz")
+	if stat != nil {
+		return stat
+	}
+	if link.Mode()&os.ModeSymlink == 0 {
+		return &os.PathError{Op: "lstat", Path: "/boot/vmlinuz", Err: os.ErrInvalid}
+	}
+	// check if the link is valid
+	_, stat = os.Stat(link.Name())
+	if stat != nil {
+		return stat
+	}
+	return nil
 }
 
 // validateBinaries checks if the expected binaries are there
@@ -76,6 +88,18 @@ func validateSystemd() error {
 // also checks if it has immucore and agent binary in the initrd
 func validateInitrd() error {
 	log.Log.Logger.Info().Msg("Validating initrd")
-	_, stat := os.Stat("/boot/initrd")
+	// check if the initrd is linked from /boot/initrd so it should be a symlink and valid
+	link, stat := os.Lstat("/boot/initrd")
+	if stat != nil {
+		return stat
+	}
+	if link.Mode()&os.ModeSymlink == 0 {
+		return &os.PathError{Op: "lstat", Path: "/boot/initrd", Err: os.ErrInvalid}
+	}
+	// check if the link is valid, it points to a existing file
+	_, stat = os.Stat(link.Name())
+	if stat != nil {
+		return stat
+	}
 	return stat
 }
