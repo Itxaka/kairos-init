@@ -26,51 +26,11 @@ func (g Immutability) Name() string {
 
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
-	// First base packages so certs are updated + immucore
-	version, err := semver.NewVersion(s.Version)
-	if err != nil {
-		l.Logger.Error().Err(err).Str("version", s.Version).Msg("Error parsing version.")
-		return err
-	}
-	mergedPkgs := values.CommonPackages
-	if _, ok := values.BasePackages[s.Distro][s.Arch][values.Common]; ok {
-		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][values.Common]...)
-	}
-
-	if _, ok := values.BasePackages[s.Distro][s.Arch][s.Version]; ok {
-		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][s.Version]...)
-	}
-
-	// Add immucore required packages for the distro version with versioning
-	for k, v := range values.ImmucorePackages[s.Distro][s.Arch] {
-		if k == values.Common {
-			mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch][values.Common]...)
-			continue
-		}
-		constraint, err := semver.NewConstraint(k)
-		if err != nil {
-			l.Logger.Error().Err(err).Str("constraint", k).Msg("Error parsing constraint.")
-			continue
-		}
-		if constraint.Check(version) {
-			mergedPkgs = append(mergedPkgs, v...)
-		}
-	}
-	// Add kernel packages
-	mergedPkgs = append(mergedPkgs, values.KernelPackages[s.Distro]...)
-	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
-	mergedPkgs = append(mergedPkgs, values.GrubPackages[s.Distro][s.Arch]...)
-	if _, ok := values.SystemdPackages[s.Distro][s.Arch][values.Common]; ok {
-		// Add common systemd packages
-		mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][values.Common]...)
-	}
-	// Add specific systemd packages for the distro version
-	if _, ok := values.SystemdPackages[s.Distro][s.Arch][s.Version]; ok {
-		mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][s.Version]...)
-	}
+	// Get the packages to install for this system
+	packages, err := getPackages(s, l)
 
 	// Now parse the packages with the templating engine
-	finalMergedPkgs, err := values.PackageListToTemplate(mergedPkgs, s.GetTemplateParams(), l)
+	finalMergedPkgs, err := values.PackageListToTemplate(packages, s.GetTemplateParams(), l)
 	if err != nil {
 		l.Logger.Error().Err(err).Msg("Error parsing base packages.")
 		return err
@@ -95,6 +55,41 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 		return err
 	}
 	return nil
+}
+
+// getPackages returns the packages to install for the Immutability feature.
+// It parses the package maps and returns the packages that match the system version with semver
+func getPackages(s values.System, l sdkTypes.KairosLogger) ([]string, error) {
+	mergedPkgs := values.CommonPackages
+	version, err := semver.NewVersion(s.Version)
+	if err != nil {
+		l.Logger.Error().Err(err).Str("version", s.Version).Msg("Error parsing version.")
+		return mergedPkgs, err
+	}
+
+	// Go over all packages maps
+	for _, packages := range []map[string][]string{
+		values.BasePackages[s.Distro][s.Arch],
+		values.ImmucorePackages[s.Distro][s.Arch],
+		values.KernelPackages[s.Distro][s.Arch],
+		values.GrubPackages[s.Distro][s.Arch],
+		values.SystemdPackages[s.Distro][s.Arch],
+	} {
+		// for each package map, check if the version matches the constraint
+		for k, v := range packages {
+			constraint, err := semver.NewConstraint(k)
+			if err != nil {
+				l.Logger.Error().Err(err).Str("constraint", k).Msg("Error parsing constraint.")
+				continue
+			}
+			// Also add them if the constraint is the common packages
+			if constraint.Check(version) || k == values.Common {
+				mergedPkgs = append(mergedPkgs, v...)
+			}
+		}
+	}
+
+	return mergedPkgs, nil
 }
 
 // Remove removes the Immutability feature.

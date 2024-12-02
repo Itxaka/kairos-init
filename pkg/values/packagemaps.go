@@ -71,8 +71,14 @@ var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
 
 // KernelPackages is a map of packages to install for each distro.
 // No arch required here, maybe models will need different packages?
-var KernelPackages = map[Distro][]string{
-	Ubuntu: {"linux-image-generic-hwe-{{.version}}"}, // This is a template, so we can replace the version with the actual version of the system
+var KernelPackages = map[Distro]map[Architecture]map[string][]string{
+	Ubuntu: {
+		ArchAMD64: {
+			Common: {
+				"linux-image-generic-hwe-{{.version}}",
+			},
+		},
+	}, // This is a template, so we can replace the version with the actual version of the system
 }
 
 // BasePackages is a map of packages to install for each distro and architecture.
@@ -129,27 +135,31 @@ var BasePackages = map[Distro]map[Architecture]map[string][]string{
 
 // GrubPackages is a map of packages to install for each distro and architecture.
 // TODO: Check why some packages we only install on amd64 and not on arm64?? Like neovim???
-var GrubPackages = map[Distro]map[Architecture][]string{
+var GrubPackages = map[Distro]map[Architecture]map[string][]string{
 	Ubuntu: {
 		ArchAMD64: {
-			"grub2",
-			"grub-efi-amd64-bin",
-			"grub-efi-amd64-signed",
-			"grub-pc-bin",
-			"coreutils",
-			"grub2-common",
-			"kbd",
-			"lldpd",
-			"neovim",
-			"shim-signed",
-			"snmpd",
-			"squashfs-tools",
-			"zfsutils-linux",
+			Common: {
+				"grub2",
+				"grub-efi-amd64-bin",
+				"grub-efi-amd64-signed",
+				"grub-pc-bin",
+				"coreutils",
+				"grub2-common",
+				"kbd",
+				"lldpd",
+				"neovim",
+				"shim-signed",
+				"snmpd",
+				"squashfs-tools",
+				"zfsutils-linux",
+			},
 		},
 		ArchARM64: {
-			"grub-efi-arm64",
-			"grub-efi-arm64-bin",
-			"grub-efi-arm64-signed",
+			Common: {
+				"grub-efi-arm64",
+				"grub-efi-arm64-bin",
+				"grub-efi-arm64-signed",
+			},
 		},
 	},
 }
