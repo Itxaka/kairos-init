@@ -40,6 +40,9 @@ var CommonPackages = []string{
 	"parted",
 }
 
+type PackageMap map[Distro]map[Architecture]VersionMap
+type VersionMap map[string][]string
+
 // ImmucorePackages are the minimum set of packages that immucore needs.
 // Otherwise you wont be able to build the initrd with immucore on it.
 // - dosfstools for the fat32 partition :(
@@ -54,7 +57,7 @@ var CommonPackages = []string{
 // - systemd-sysv, like wtf? we should drop that
 // - cloud-guest-utils??? what is that? Drop it
 // - gawk for the scripts I guess? I think some network-legacy stuff nedeed it so we need to include it
-var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
+var ImmucorePackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
@@ -62,7 +65,7 @@ var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
 				"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup",
 				"systemd-sysv", "cloud-guest-utils", "gawk",
 			},
-			">=24.04": {"dracut-live"},
+			">=22.04": {"dracut-live"},
 		},
 		ArchARM64: {},
 	},
@@ -70,13 +73,20 @@ var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
 
 // KernelPackages is a map of packages to install for each distro.
 // No arch required here, maybe models will need different packages?
-var KernelPackages = map[Distro][]string{
-	Ubuntu: {"linux-image-generic-hwe-{{.version}}"}, // This is a template, so we can replace the version with the actual version of the system
+var KernelPackages = PackageMap{
+	Ubuntu: {
+		ArchAMD64: {
+			">=20.04, != 24.10": {
+				"linux-image-generic-hwe-{{.version}}", // This is a template, so we can replace the version with the actual version of the system
+			},
+			"24.10": {"linux-image-generic-hwe-24.04"}, // Somehow 24.10 uses the 22.04 hwe kernel
+		},
+	},
 }
 
 // BasePackages is a map of packages to install for each distro and architecture.
 // This comprises the base packages that are needed for the system to work on a Kairos system
-var BasePackages = map[Distro]map[Architecture]map[string][]string{
+var BasePackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
@@ -113,7 +123,7 @@ var BasePackages = map[Distro]map[Architecture]map[string][]string{
 				"xxd",
 				"zerofree",
 			},
-			">=24:04": {
+			">=24.04": {
 				"systemd-resolved",
 			},
 		},
@@ -128,40 +138,44 @@ var BasePackages = map[Distro]map[Architecture]map[string][]string{
 
 // GrubPackages is a map of packages to install for each distro and architecture.
 // TODO: Check why some packages we only install on amd64 and not on arm64?? Like neovim???
-var GrubPackages = map[Distro]map[Architecture][]string{
+var GrubPackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
-			"grub2",
-			"grub-efi-amd64-bin",
-			"grub-efi-amd64-signed",
-			"grub-pc-bin",
-			"coreutils",
-			"grub2-common",
-			"kbd",
-			"lldpd",
-			"neovim",
-			"shim-signed",
-			"snmpd",
-			"squashfs-tools",
-			"zfsutils-linux",
+			Common: {
+				"grub2",
+				"grub-efi-amd64-bin",
+				"grub-efi-amd64-signed",
+				"grub-pc-bin",
+				"coreutils",
+				"grub2-common",
+				"kbd",
+				"lldpd",
+				"neovim",
+				"shim-signed",
+				"snmpd",
+				"squashfs-tools",
+				"zfsutils-linux",
+			},
 		},
 		ArchARM64: {
-			"grub-efi-arm64",
-			"grub-efi-arm64-bin",
-			"grub-efi-arm64-signed",
+			Common: {
+				"grub-efi-arm64",
+				"grub-efi-arm64-bin",
+				"grub-efi-arm64-signed",
+			},
 		},
 	},
 }
 
 // SystemdPackages is a map of packages to install for each distro and architecture for systemd-boot (trusted boot) variants
 // TODO: Check why some packages we only install on amd64 and not on arm64?? Like kmod???
-var SystemdPackages = map[Distro]map[Architecture]map[string][]string{
+var SystemdPackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
 				"systemd",
 			},
-			">=24:04": {
+			">=24.04": {
 				"iucode-tool",
 				"kmod",
 				"linux-base",
