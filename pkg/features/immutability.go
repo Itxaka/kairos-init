@@ -78,6 +78,7 @@ func getPackages(s values.System, l sdkTypes.KairosLogger) ([]string, error) {
 		// for each package map, check if the version matches the constraint
 		for k, v := range packages {
 			// Add them if they are common
+			l.Logger.Debug().Str("constraint", k).Str("version", k).Msg("Checking constraint")
 			if k == values.Common {
 				mergedPkgs = append(mergedPkgs, v...)
 				continue

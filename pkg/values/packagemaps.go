@@ -65,7 +65,7 @@ var ImmucorePackages = PackageMap{
 				"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup",
 				"systemd-sysv", "cloud-guest-utils", "gawk",
 			},
-			">=24.04": {"dracut-live"},
+			">=22.04": {"dracut-live"},
 		},
 		ArchARM64: {},
 	},
