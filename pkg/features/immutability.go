@@ -41,13 +41,10 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][s.Version]...)
 	}
 
-	// Add immucore required packages
-	if _, ok := values.ImmucorePackages[s.Distro][s.Arch][values.Common]; ok {
-		mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch][values.Common]...)
-	}
 	// Add immucore required packages for the distro version with versioning
 	for k, v := range values.ImmucorePackages[s.Distro][s.Arch] {
 		if k == values.Common {
+			mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch][values.Common]...)
 			continue
 		}
 		constraint, err := semver.ParseRange(k)

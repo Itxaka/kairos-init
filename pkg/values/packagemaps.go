@@ -63,6 +63,7 @@ var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
 				"systemd-sysv", "cloud-guest-utils", "gawk",
 			},
 			">=24.04": {"dracut-live"},
+			">=20.04": {"caca"},
 		},
 		ArchARM64: {},
 	},
