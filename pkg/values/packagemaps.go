@@ -76,9 +76,10 @@ var ImmucorePackages = PackageMap{
 var KernelPackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
-			Common: {
+			">=20.04, != 24.10": {
 				"linux-image-generic-hwe-{{.version}}", // This is a template, so we can replace the version with the actual version of the system
 			},
+			"24.10": {"linux-image-generic-hwe-24.04"}, // Somehow 24.10 uses the 22.04 hwe kernel
 		},
 	},
 }
