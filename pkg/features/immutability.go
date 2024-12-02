@@ -68,7 +68,7 @@ func getPackages(s values.System, l sdkTypes.KairosLogger) ([]string, error) {
 	}
 
 	// Go over all packages maps
-	for _, packages := range []map[string][]string{
+	for _, packages := range []values.VersionMap{
 		values.BasePackages[s.Distro][s.Arch],
 		values.ImmucorePackages[s.Distro][s.Arch],
 		values.KernelPackages[s.Distro][s.Arch],
