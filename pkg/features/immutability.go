@@ -26,15 +26,25 @@ func (g Immutability) Name() string {
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	// First base packages so certs are updated + immucore
-	mergedPkgs := append(values.BasePackages[s.Distro][s.Arch], values.CommonPackages...)
+	mergedPkgs := values.CommonPackages
+	if _, ok := values.BasePackages[s.Distro][s.Arch][values.Common]; ok {
+		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][values.Common]...)
+	}
+
+	if _, ok := values.BasePackages[s.Distro][s.Arch][s.Version]; ok {
+		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][s.Version]...)
+	}
+
 	// Add immucore required packages
 	mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch]...)
 	// Add kernel packages
 	mergedPkgs = append(mergedPkgs, values.KernelPackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
 	mergedPkgs = append(mergedPkgs, values.GrubPackages[s.Distro][s.Arch]...)
-	// Add common systemd packages
-	mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][values.Common]...)
+	if _, ok := values.SystemdPackages[s.Distro][s.Arch][values.Common]; ok {
+		// Add common systemd packages
+		mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][values.Common]...)
+	}
 	// Add specific systemd packages for the distro version
 	if _, ok := values.SystemdPackages[s.Distro][s.Arch][s.Version]; ok {
 		mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][s.Version]...)
