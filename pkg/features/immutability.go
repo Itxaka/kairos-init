@@ -77,13 +77,18 @@ func getPackages(s values.System, l sdkTypes.KairosLogger) ([]string, error) {
 	} {
 		// for each package map, check if the version matches the constraint
 		for k, v := range packages {
+			// Add them if they are common
+			if k == values.Common {
+				mergedPkgs = append(mergedPkgs, v...)
+				continue
+			}
 			constraint, err := semver.NewConstraint(k)
 			if err != nil {
 				l.Logger.Error().Err(err).Str("constraint", k).Msg("Error parsing constraint.")
 				continue
 			}
-			// Also add them if the constraint is the common packages
-			if constraint.Check(version) || k == values.Common {
+			// Also add them if the constraint matches
+			if constraint.Check(version) {
 				mergedPkgs = append(mergedPkgs, v...)
 			}
 		}
