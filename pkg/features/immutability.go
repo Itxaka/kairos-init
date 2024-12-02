@@ -3,6 +3,7 @@
 package features
 
 import (
+	"github.com/blang/semver/v4"
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	sdkUtils "github.com/kairos-io/kairos-sdk/utils"
@@ -26,6 +27,11 @@ func (g Immutability) Name() string {
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	// First base packages so certs are updated + immucore
+	version, err := semver.ParseTolerant(s.Version)
+	if err != nil {
+		l.Logger.Error().Err(err).Str("version", s.Version).Msg("Error parsing version.")
+		return err
+	}
 	mergedPkgs := values.CommonPackages
 	if _, ok := values.BasePackages[s.Distro][s.Arch][values.Common]; ok {
 		mergedPkgs = append(mergedPkgs, values.BasePackages[s.Distro][s.Arch][values.Common]...)
@@ -36,7 +42,23 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	}
 
 	// Add immucore required packages
-	mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch]...)
+	if _, ok := values.ImmucorePackages[s.Distro][s.Arch][values.Common]; ok {
+		mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch][values.Common]...)
+	}
+	// Add immucore required packages for the distro version with versioning
+	for k, v := range values.ImmucorePackages[s.Distro][s.Arch] {
+		if k == values.Common {
+			continue
+		}
+		constraint, err := semver.ParseRange(k)
+		if err != nil {
+			l.Logger.Error().Err(err).Str("constraint", k).Msg("Error parsing constraint.")
+			continue
+		}
+		if constraint(version) {
+			mergedPkgs = append(mergedPkgs, v...)
+		}
+	}
 	// Add kernel packages
 	mergedPkgs = append(mergedPkgs, values.KernelPackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot

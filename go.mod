@@ -4,10 +4,12 @@ go 1.23.2
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.5.1
 	github.com/kairos-io/kairos-sdk v0.6.0
+	github.com/rs/zerolog v1.33.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
@@ -67,7 +69,6 @@ require (
 	github.com/pterm/pterm v0.12.63 // indirect
 	github.com/qeesung/image2ascii v1.0.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect

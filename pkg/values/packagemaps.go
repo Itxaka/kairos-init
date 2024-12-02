@@ -54,12 +54,16 @@ var CommonPackages = []string{
 // - systemd-sysv, like wtf? we should drop that
 // - cloud-guest-utils??? what is that? Drop it
 // - gawk for the scripts I guess? I think some network-legacy stuff nedeed it so we need to include it
-var ImmucorePackages = map[Distro]map[Architecture][]string{
+var ImmucorePackages = map[Distro]map[Architecture]map[string][]string{
 	Ubuntu: {
 		ArchAMD64: {
-			"dbus", "dracut", "dracut-network", "dracut-live", "dosfstools", "e2fsprogs", "isc-dhcp-common",
-			"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup",
-			"systemd-sysv", "cloud-guest-utils", "gawk"},
+			Common: {
+				"dbus", "dracut", "dracut-network", "dosfstools", "e2fsprogs", "isc-dhcp-common",
+				"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup",
+				"systemd-sysv", "cloud-guest-utils", "gawk",
+			},
+			">=24.04": {"dracut-live"},
+		},
 		ArchARM64: {},
 	},
 }
@@ -109,10 +113,7 @@ var BasePackages = map[Distro]map[Architecture]map[string][]string{
 				"xxd",
 				"zerofree",
 			},
-			"24:04": {
-				"systemd-resolved",
-			},
-			"24.10": {
+			">=24:04": {
 				"systemd-resolved",
 			},
 		},
@@ -160,22 +161,17 @@ var SystemdPackages = map[Distro]map[Architecture]map[string][]string{
 			Common: {
 				"systemd",
 			},
-			"24:04": {
+			">=24:04": {
 				"iucode-tool",
 				"kmod",
 				"linux-base",
 				"systemd-boot",
 			},
-			"22.04": {},
-			"20.04": {},
 		},
 		ArchARM64: {
 			Common: {
 				"systemd",
 			},
-			"24:04": {},
-			"22:04": {},
-			"20:04": {},
 		},
 	},
 }
