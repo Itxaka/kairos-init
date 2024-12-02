@@ -53,9 +53,16 @@ func main() {
 				}
 			}
 
+			Log.Logger.Debug().Interface("system", s).Msg("Detected system")
+
 			err = s.ApplyFeatures(Log)
 			if err != nil {
 				Log.Logger.Err(err).Msg("Error applying features")
+				return err
+			}
+			err = s.ApplyWorkarounds(Log)
+			if err != nil {
+				Log.Logger.Err(err).Msg("Error applying workarounds")
 				return err
 			}
 			return validator.ValidateFeatures(s.Features)

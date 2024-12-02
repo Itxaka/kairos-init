@@ -15,4 +15,4 @@ RUN /kairos-init -l debug -f kernel
 RUN /kairos-init -l debug -f initrd
 RUN /kairos-init -l debug -f release
 RUN /kairos-init -l debug -f clean
-RUN rm /kairos-init
+#RUN rm /kairos-init

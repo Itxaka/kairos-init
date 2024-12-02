@@ -2,6 +2,8 @@ package values
 
 import (
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
+	"github.com/rs/zerolog"
+	"github.com/sanity-io/litter"
 	"strings"
 )
 
@@ -88,6 +90,27 @@ type Feature interface {
 	GetOrder() int
 }
 
+type Features []Feature
+
+// MarshalZerologObject For zerolog to be able to log the features in a nicer way
+func (f Features) MarshalZerologObject(e *zerolog.Event) {
+	for _, feature := range f {
+		e.Str("name", feature.Name())
+		e.Int("order", feature.GetOrder())
+	}
+}
+
+type Workarounds []Workaround
+
+// MarshalZerologObject For zerolog to be able to log the features in a nicer way
+func (w Workarounds) MarshalZerologObject(e *zerolog.Event) {
+	for _, workaround := range w {
+		e.Str("name", litter.Sdump(workaround))
+	}
+}
+
+type Workaround func(s *System, l sdkTypes.KairosLogger) error
+
 // Installer is an interface that defines the methods to install and remove packages
 type Installer interface {
 	Install(packages []string, l sdkTypes.KairosLogger) error
@@ -101,8 +124,8 @@ type System struct {
 	Family      Family
 	Version     string
 	Arch        Architecture
-	Features    []Feature
-	Workarounds []func() error
+	Features    Features
+	Workarounds Workarounds `json:"-,omitempty" yaml:"-,omitempty"`
 	Installer   Installer
 	Force       bool // Force will force the installation of the features without checking the Installed() method
 }
@@ -136,9 +159,12 @@ func (s *System) RemoveFeatures(l sdkTypes.KairosLogger) error {
 }
 
 // ApplyWorkarounds will apply the workarounds to the system
-func (s *System) ApplyWorkarounds() error {
+func (s *System) ApplyWorkarounds(l sdkTypes.KairosLogger) error {
 	for _, w := range s.Workarounds {
-		w()
+		err := w(s, l)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -171,5 +197,17 @@ func (s *System) GetTemplateParams() map[string]string {
 		"distro":  s.Distro.String(),
 		"version": s.Version,
 		"arch":    s.Arch.String(),
+		"family":  s.Family.String(),
 	}
+}
+
+func (s System) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("name", s.Name).
+		Str("distro", s.Distro.String()).
+		Str("family", s.Family.String()).
+		Str("version", s.Version).
+		Str("arch", s.Arch.String())
+
+	e.Object("features", s.Features)
+	e.Object("workarounds", s.Workarounds)
 }

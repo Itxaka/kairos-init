@@ -5,6 +5,7 @@ import (
 	"github.com/kairos-io/kairos-init/pkg/features"
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
+	"github.com/sanity-io/litter"
 	"os"
 	"runtime"
 )
@@ -116,7 +117,16 @@ func DetectSystem(l sdkTypes.KairosLogger) values.System {
 	}
 
 	s.Features = []values.Feature{}
-	l.Logger.Debug().Interface("system", s).Msg("Detected system")
+
+	// Check if we have any workarounds for the system
+	if s.Distro != values.Unknown {
+		if workarounds, ok := values.WorkaroundsMap[s.Distro][s.Arch][s.Version]; ok {
+			for _, w := range workarounds {
+				l.Logger.Debug().Str("workaround", litter.Sdump(w)).Str("version", s.Version).Str("distro", s.Distro.String()).Str("arch", s.Arch.String()).Msg("Adding workaround")
+				s.Workarounds = append(s.Workarounds, w)
+			}
+		}
+	}
 
 	return s
 }
