@@ -160,6 +160,9 @@ func (s *System) RemoveFeatures(l sdkTypes.KairosLogger) error {
 
 // ApplyWorkarounds will apply the workarounds to the system
 func (s *System) ApplyWorkarounds(l sdkTypes.KairosLogger) error {
+	if len(s.Workarounds) != 0 {
+		l.Logger.Info().Str("version", s.Version).Str("distro", s.Distro.String()).Str("arch", s.Arch.String()).Msg("Applying workarounds")
+	}
 	for _, w := range s.Workarounds {
 		err := w(s, l)
 		if err != nil {

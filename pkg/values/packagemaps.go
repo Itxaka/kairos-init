@@ -147,17 +147,33 @@ var GrubPackages = map[Distro]map[Architecture][]string{
 
 // SystemdPackages is a map of packages to install for each distro and architecture for systemd-boot (trusted boot) variants
 // TODO: Check why some packages we only install on amd64 and not on arm64?? Like kmod???
-var SystemdPackages = map[Distro]map[Architecture][]string{
+var SystemdPackages = map[Distro]map[Architecture]map[string][]string{
 	Ubuntu: {
 		ArchAMD64: {
-			"systemd",
-			"iucode-tool",
-			"kmod",
-			"linux-base",
-			"systemd-boot",
+			"24:04": {
+				"systemd",
+				"iucode-tool",
+				"kmod",
+				"linux-base",
+				"systemd-boot",
+			},
+			"22.04": {
+				"systemd",
+			},
+			"20.04": {
+				"systemd",
+			},
 		},
 		ArchARM64: {
-			"systemd",
+			"24:04": {
+				"systemd",
+			},
+			"22:04": {
+				"systemd",
+			},
+			"20:04": {
+				"systemd",
+			},
 		},
 	},
 }
