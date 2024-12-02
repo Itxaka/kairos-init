@@ -150,30 +150,25 @@ var GrubPackages = map[Distro]map[Architecture][]string{
 var SystemdPackages = map[Distro]map[Architecture]map[string][]string{
 	Ubuntu: {
 		ArchAMD64: {
-			"24:04": {
+			Common: {
 				"systemd",
+			},
+			"24:04": {
 				"iucode-tool",
 				"kmod",
 				"linux-base",
 				"systemd-boot",
 			},
-			"22.04": {
-				"systemd",
-			},
-			"20.04": {
-				"systemd",
-			},
+			"22.04": {},
+			"20.04": {},
 		},
 		ArchARM64: {
-			"24:04": {
+			Common: {
 				"systemd",
 			},
-			"22:04": {
-				"systemd",
-			},
-			"20:04": {
-				"systemd",
-			},
+			"24:04": {},
+			"22:04": {},
+			"20:04": {},
 		},
 	},
 }

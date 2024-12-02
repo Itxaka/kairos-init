@@ -23,6 +23,9 @@ func FilesToRemove() []string {
 	}
 }
 
+// Common Used for packages that are common to whatever key
+const Common = "common"
+
 type Architecture string
 
 func (a Architecture) String() string {

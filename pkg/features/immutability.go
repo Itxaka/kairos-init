@@ -33,7 +33,12 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	mergedPkgs = append(mergedPkgs, values.KernelPackages[s.Distro]...)
 	// TODO: Somehow we need to know here if we are installing grub or systemd-boot
 	mergedPkgs = append(mergedPkgs, values.GrubPackages[s.Distro][s.Arch]...)
-	mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][s.Version]...)
+	// Add common systemd packages
+	mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][values.Common]...)
+	// Add specific systemd packages for the distro version
+	if _, ok := values.SystemdPackages[s.Distro][s.Arch][s.Version]; ok {
+		mergedPkgs = append(mergedPkgs, values.SystemdPackages[s.Distro][s.Arch][s.Version]...)
+	}
 
 	// Now parse the packages with the templating engine
 	finalMergedPkgs, err := values.PackageListToTemplate(mergedPkgs, s.GetTemplateParams(), l)
