@@ -3,7 +3,7 @@
 package features
 
 import (
-	"github.com/blang/semver/v4"
+	"github.com/Masterminds/semver/v3"
 	"github.com/kairos-io/kairos-init/pkg/values"
 	sdkTypes "github.com/kairos-io/kairos-sdk/types"
 	sdkUtils "github.com/kairos-io/kairos-sdk/utils"
@@ -27,7 +27,7 @@ func (g Immutability) Name() string {
 // Install installs the Immutability feature.
 func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 	// First base packages so certs are updated + immucore
-	version, err := semver.ParseTolerant(s.Version)
+	version, err := semver.NewVersion(s.Version)
 	if err != nil {
 		l.Logger.Error().Err(err).Str("version", s.Version).Msg("Error parsing version.")
 		return err
@@ -47,12 +47,12 @@ func (g Immutability) Install(s values.System, l sdkTypes.KairosLogger) error {
 			mergedPkgs = append(mergedPkgs, values.ImmucorePackages[s.Distro][s.Arch][values.Common]...)
 			continue
 		}
-		constraint, err := semver.ParseRange(k)
+		constraint, err := semver.NewConstraint(k)
 		if err != nil {
 			l.Logger.Error().Err(err).Str("constraint", k).Msg("Error parsing constraint.")
 			continue
 		}
-		if constraint(version) {
+		if constraint.Check(version) {
 			mergedPkgs = append(mergedPkgs, v...)
 		}
 	}
