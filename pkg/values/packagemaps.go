@@ -22,22 +22,23 @@ import "text/template"
 
 // CommonPackages are packages that are named the same across all distros and arches
 var CommonPackages = []string{
-	"curl",
-	"file",
-	"gawk",
-	"iptables",
-	"less",
-	"nano",
-	"sudo",
-	"tar",
-	"zstd",
-	"rsync",
-	"systemd",
-	"lvm2",
-	"jq",
-	"dosfstools",
-	"e2fsprogs",
-	"parted",
+	"curl",       // Basic tool. Also needed for netbooting as it is used to download the netboot artifacts
+	"file",       // Basic tool.
+	"gawk",       // Basic tool.
+	"iptables",   // Basic tool.
+	"less",       // Basic tool.
+	"nano",       // Basic tool.
+	"sudo",       // Basic tool. Needed for the user to be able to run commands as root
+	"tar",        // Basic tool.
+	"zstd",       // Compression support for zstd
+	"rsync",      // Install, upgrade, reset use it to sync the files
+	"systemd",    // Basic tool.
+	"dbus",       // Basic tool.
+	"lvm2",       // Seems to be used to support rpi3 only
+	"jq",         // No idea why we need it, check if we can drop it?
+	"dosfstools", // For the fat32 partition on EFI systems
+	"e2fsprogs",  // mkfs support for ext2/3/4
+	"parted",     // Partitioning support, check if we need it anymore
 }
 
 type PackageMap map[Distro]map[Architecture]VersionMap
@@ -45,27 +46,20 @@ type VersionMap map[string][]string
 
 // ImmucorePackages are the minimum set of packages that immucore needs.
 // Otherwise you wont be able to build the initrd with immucore on it.
-// - dosfstools for the fat32 partition :(
-// - e2fsprogs for the other partitions formatting only
-// - curl is needed for livenet, which in turn is needed for kairos-network, basically for netboot!
-// - parted for the partitioning used by yip
-// - fdisk for the partitioning used by yip
-// - gdisk for the partitioning used by yip
-// - rsync for the rsync command, not sure why we need it. Immucore doesnt rsync anything I think?
-// - cryptsetup for the encrypted partitions
-// - lvm for rpi3 only :(
-// - systemd-sysv, like wtf? we should drop that
-// - cloud-guest-utils??? what is that? Drop it
-// - gawk for the scripts I guess? I think some network-legacy stuff nedeed it so we need to include it
 var ImmucorePackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
-				"dbus", "dracut", "dracut-network", "dosfstools", "e2fsprogs", "isc-dhcp-common",
-				"isc-dhcp-client", "lvm2", "curl", "parted", "fdisk", "gdisk", "rsync", "cryptsetup",
-				"systemd-sysv", "cloud-guest-utils", "gawk",
+				"dracut",            // To build the initrd
+				"dracut-network",    // Network-legacy support for dracut
+				"isc-dhcp-common",   // Network-legacy support for dracut, basic tools
+				"isc-dhcp-client",   // Network-legacy support for dracut, basic tools
+				"systemd-sysv",      // No idea, drop it?
+				"cloud-guest-utils", // This brings growpart, so we can resize the partitions
 			},
-			">=22.04": {"dracut-live"},
+			">=22.04": {
+				"dracut-live", // Livenet support for dracut, split into a separate package on 22.04
+			},
 		},
 		ArchARM64: {},
 	},
@@ -77,9 +71,11 @@ var KernelPackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			">=20.04, != 24.10": {
-				"linux-image-generic-hwe-{{.version}}", // This is a template, so we can replace the version with the actual version of the system
+				// This is a template, so we can replace the version with the actual version of the system
+				"linux-image-generic-hwe-{{.version}}",
 			},
-			"24.10": {"linux-image-generic-hwe-24.04"}, // Somehow 24.10 uses the 22.04 hwe kernel
+			// Somehow 24.10 uses the 22.04 hwe kernel
+			"24.10": {"linux-image-generic-hwe-24.04"},
 		},
 	},
 }
@@ -90,13 +86,13 @@ var BasePackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
-				"gdisk",
-				"fdisk",
-				"ca-certificates",
+				"gdisk",           // Yip requires it for partitioning
+				"fdisk",           // Yip requires it for partitioning
+				"ca-certificates", // Basic certificates for secure communication
 				"conntrack",
-				"console-data",
-				"cloud-guest-utils",
-				"cryptsetup",
+				"console-data",      // Console font support
+				"cloud-guest-utils", // Yip requires it, this brings growpart, so we can resize the partitions
+				"cryptsetup",        // For encrypted partitions support
 				"debianutils",
 				"gettext",
 				"haveged",
@@ -106,15 +102,15 @@ var BasePackages = PackageMap{
 				"nbd-client",
 				"nfs-common",
 				"open-iscsi",
-				"open-vm-tools",
-				"openssh-server",
+				"open-vm-tools",  // For vmware support, probably move it to a bundle?
+				"openssh-server", // Basic ssh server
 				"systemd-timesyncd",
-				"systemd-container",
-				"ubuntu-advantage-tools",
-				"xz-utils",
-				"tpm2-tools",
-				"dmsetup",
-				"mdadm",
+				"systemd-container",      // Not sure if needed?
+				"ubuntu-advantage-tools", // For ubuntu advantage support, enablement of ubuntu services
+				"xz-utils",               // Compression support for xz
+				"tpm2-tools",             // For TPM support, mainly trusted boot
+				"dmsetup",                // Device mapper support, needed for lvm and cryptsetup
+				"mdadm",                  // For software raid support, not sure if needed?
 				"ncurses-term",
 				"networkd-dispatcher",
 				"packagekit-tools",
@@ -124,7 +120,7 @@ var BasePackages = PackageMap{
 				"zerofree",
 			},
 			">=24.04": {
-				"systemd-resolved",
+				"systemd-resolved", // For systemd-resolved support, added as a separate package on 24.04
 			},
 		},
 		ArchARM64: {},
@@ -138,30 +134,34 @@ var BasePackages = PackageMap{
 
 // GrubPackages is a map of packages to install for each distro and architecture.
 // TODO: Check why some packages we only install on amd64 and not on arm64?? Like neovim???
+// Note: some of the packages seems to be onyl installed here as we dont have any size restraints
+// And we dont want to have Trusted Boot have those packages, as we want it small.
+// we should probably move those into a new PackageMap called ExtendedPackages or something like that
+// instead of merging them with grub packages.
 var GrubPackages = PackageMap{
 	Ubuntu: {
 		ArchAMD64: {
 			Common: {
-				"grub2",
-				"grub-efi-amd64-bin",
-				"grub-efi-amd64-signed",
-				"grub-pc-bin",
-				"coreutils",
-				"grub2-common",
-				"kbd",
-				"lldpd",
-				"neovim",
-				"shim-signed",
-				"snmpd",
-				"squashfs-tools",
-				"zfsutils-linux",
+				"grub2",                 // Basic grub support
+				"grub-efi-amd64-bin",    // Basic grub support for EFI
+				"grub-efi-amd64-signed", // For secure boot support
+				"grub-pc-bin",           // Basic grub support for BIOS, probably needed byt AuroraBoot to build hybrid isos?
+				"coreutils",             // Basic tools, probably needs to be part of BasePackages?
+				"grub2-common",          // Basic grub support
+				"kbd",                   // Keyboard configuration
+				"lldpd",                 // For lldp support, check if needed?
+				"neovim",                // For neovim support, check if needed? Move to BasePackages if so?
+				"shim-signed",           // For secure boot support
+				"snmpd",                 // For snmp support, check if needed? Move to BasePackages if so?
+				"squashfs-tools",        // For squashfs support, probably needs to be part of BasePackages
+				"zfsutils-linux",        // For zfs tools (zfs and zpool), probably needs to be part of BasePackages
 			},
 		},
 		ArchARM64: {
 			Common: {
-				"grub-efi-arm64",
-				"grub-efi-arm64-bin",
-				"grub-efi-arm64-signed",
+				"grub-efi-arm64",        // Basic grub support for EFI
+				"grub-efi-arm64-bin",    // Basic grub support for EFI
+				"grub-efi-arm64-signed", // For secure boot support
 			},
 		},
 	},
@@ -179,7 +179,7 @@ var SystemdPackages = PackageMap{
 				"iucode-tool",
 				"kmod",
 				"linux-base",
-				"systemd-boot",
+				"systemd-boot", // Trusted boot support, it was split as a package on 24.04
 			},
 		},
 		ArchARM64: {

@@ -70,10 +70,10 @@ func getPackages(s values.System, l sdkTypes.KairosLogger) ([]string, error) {
 	// Go over all packages maps
 	for _, packages := range []values.VersionMap{
 		values.BasePackages[s.Distro][s.Arch],
-		values.ImmucorePackages[s.Distro][s.Arch],
+		values.ImmucorePackages[s.Distro][s.Arch], // immucore packages should only be installed under grub
 		values.KernelPackages[s.Distro][s.Arch],
-		values.GrubPackages[s.Distro][s.Arch],
-		values.SystemdPackages[s.Distro][s.Arch],
+		values.GrubPackages[s.Distro][s.Arch],    // grub packages should only be installed under grub
+		values.SystemdPackages[s.Distro][s.Arch], // systemd packages should only be installed under trusted boot
 	} {
 		// for each package map, check if the version matches the constraint
 		for k, v := range packages {
